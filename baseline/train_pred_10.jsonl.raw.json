@@ -1,0 +1,42 @@
+[
+ {
+  "video_file": "video_001.mp4",
+  "raw_output": "{\n  \"visual_source_type\": \"动画/CG\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"其他\",\n  \"selling_point\": \"世界观/IP代入\",\n  \"cta_type\": \"无明确CTA\",\n  \"claim_type\": [],\n  \"core_action\": [\"角色/装备展示\"],\n  \"growth_payoff\": [\"战力大幅提升\"]\n}"
+ },
+ {
+  "video_file": "video_002.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"动画/CG\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"冲突引入\",\n  \"selling_point\": \"低门槛变强\",\n  \"cta_type\": \"引导下载\",\n  \"claim_type\": [\"挂机变强\"],\n  \"core_action\": [\"自动战斗/挂机\", \"角色/装备展示\"],\n  \"growth_payoff\": [\"战力大幅提升\", \"里程碑突破\"]\n}\n```"
+ },
+ {
+  "video_file": "video_003.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"录屏\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"爽感直给\",\n  \"selling_point\": \"低门槛变强\",\n  \"cta_type\": \"立即下载\",\n  \"claim_type\": [\"挂机变强\"],\n  \"core_action\": [\"角色/装备展示\", \"换装提战\"],\n  \"growth_payoff\": [\"战力大幅提升\"]\n}\n```"
+ },
+ {
+  "video_file": "video_004.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"动画/CG\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"冲突引入\",\n  \"selling_point\": \"低门槛变强\",\n  \"cta_type\": \"引导下载\",\n  \"claim_type\": [\"挂机变强\"],\n  \"core_action\": [\"角色/装备展示\", \"换装提战\"],\n  \"growth_payoff\": [\"战力大幅提升\", \"里程碑突破\"]\n}\n```"
+ },
+ {
+  "video_file": "video_005.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"实机+包装\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"爽感直给\",\n  \"selling_point\": \"爆装刺激\",\n  \"cta_type\": \"引导下载\",\n  \"claim_type\": [\"高爆率\"],\n  \"core_action\": [\"角色/装备展示\", \"换装提战\"],\n  \"growth_payoff\": [\"战力大幅提升\", \"里程碑突破\"]\n}\n```"
+ },
+ {
+  "video_file": "video_006.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"动画/CG\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"爽感直给\",\n  \"selling_point\": \"低门槛变强\",\n  \"cta_type\": \"立即下载\",\n  \"claim_type\": [\"挂机变强\"],\n  \"core_action\": [\"角色/装备展示\"],\n  \"growth_payoff\": [\"战力大幅提升\"]\n}\n```"
+ },
+ {
+  "video_file": "video_007.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"实机+包装\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"爽感直给\",\n  \"selling_point\": \"低门槛变强\",\n  \"cta_type\": \"立即下载\",\n  \"claim_type\": [\"挂机变强\"],\n  \"core_action\": [\"自动战斗/挂机\", \"角色/装备展示\"],\n  \"growth_payoff\": [\"战力大幅提升\", \"里程碑突破\"]\n}\n```"
+ },
+ {
+  "video_file": "video_008.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"实机+包装\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"爽感直给\",\n  \"selling_point\": \"爆装刺激\",\n  \"cta_type\": \"立即下载\",\n  \"claim_type\": [\"高爆率\"],\n  \"core_action\": [\"角色/装备展示\", \"换装提战\"],\n  \"growth_payoff\": [\"战力大幅提升\", \"里程碑突破\"]\n}\n```"
+ },
+ {
+  "video_file": "video_009.mp4",
+  "raw_output": "{\n  \"visual_source_type\": \"动画/CG\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"冲突引入\",\n  \"selling_point\": \"世界观/IP代入\",\n  \"cta_type\": \"引导下载\",\n  \"claim_type\": [\"高爆率\"],\n  \"core_action\": [\"角色/装备展示\"],\n  \"growth_payoff\": [\"战力大幅提升\"]\n}"
+ },
+ {
+  "video_file": "video_010.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"动画/CG\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"世界观/IP代入\",\n  \"selling_point\": \"世界观/IP代入\",\n  \"cta_type\": \"无明确CTA\",\n  \"claim_type\": [],\n  \"core_action\": [\"角色/装备展示\"],\n  \"growth_payoff\": [\"战力大幅提升\"]\n}\n```"
+ }
+]

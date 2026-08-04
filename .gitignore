@@ -1,0 +1,22 @@
+# 模型文件（过大）
+models/
+
+# 视频文件
+初赛数据集/
+*.mp4
+
+# 压缩包
+*.zip
+
+# Python
+__pycache__/
+*.pyc
+
+# 日志
+*.log
+
+# 自动生成
+.autodl/
+
+# 系统文件
+.DS_Store
