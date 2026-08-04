@@ -1,0 +1,246 @@
+Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+Collecting torch
+  Downloading torch-2.13.0-cp310-cp310-manylinux_2_28_x86_64.whl (526.6 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 526.6/526.6 MB 10.5 MB/s  0:00:45
+Collecting torchvision
+  Downloading torchvision-0.28.0-cp310-cp310-manylinux_2_28_x86_64.whl (7.7 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 7.7/7.7 MB 9.9 MB/s  0:00:00
+Collecting filelock (from torch)
+  Downloading filelock-3.32.2-py3-none-any.whl (98 kB)
+Collecting typing-extensions>=4.10.0 (from torch)
+  Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+Requirement already satisfied: setuptools>=77.0.3 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from torch) (83.0.0)
+Collecting sympy>=1.13.3 (from torch)
+  Downloading sympy-1.14.0-py3-none-any.whl (6.3 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.3/6.3 MB 12.0 MB/s  0:00:00
+Collecting networkx>=2.5.1 (from torch)
+  Downloading networkx-3.4.2-py3-none-any.whl (1.7 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.7/1.7 MB 7.6 MB/s  0:00:00
+Collecting jinja2 (from torch)
+  Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+Collecting fsspec>=0.8.5 (from torch)
+  Downloading fsspec-2026.7.0-py3-none-any.whl (206 kB)
+Collecting cuda-toolkit==13.0.3 (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch)
+  Downloading cuda_toolkit-13.0.3.0-py2.py3-none-any.whl (2.5 kB)
+Collecting cuda-bindings<14,>=13.0.3 (from torch)
+  Downloading cuda_bindings-13.3.1-cp310-cp310-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (6.7 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.7/6.7 MB 3.1 MB/s  0:00:02
+Collecting nvidia-cudnn-cu13==9.20.0.48 (from torch)
+  Downloading nvidia_cudnn_cu13-9.20.0.48-py3-none-manylinux_2_27_x86_64.whl (366.2 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 366.2/366.2 MB 11.2 MB/s  0:00:32
+Collecting nvidia-cusparselt-cu13==0.8.1 (from torch)
+  Downloading nvidia_cusparselt_cu13-0.8.1-py3-none-manylinux2014_x86_64.whl (170.1 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 170.1/170.1 MB 13.7 MB/s  0:00:12
+Collecting nvidia-nccl-cu13==2.29.7 (from torch)
+  Downloading nvidia_nccl_cu13-2.29.7-py3-none-manylinux_2_18_x86_64.whl (206.0 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 206.0/206.0 MB 16.6 MB/s  0:00:12
+Collecting nvidia-nvshmem-cu13==3.4.5 (from torch)
+  Downloading nvidia_nvshmem_cu13-3.4.5-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (60.4 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 60.4/60.4 MB 12.4 MB/s  0:00:04
+Collecting triton==3.7.1 (from torch)
+  Downloading triton-3.7.1-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (197.6 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 197.6/197.6 MB 15.4 MB/s  0:00:12
+Collecting nvidia-cuda-cupti==13.0.85.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch)
+  Downloading nvidia_cuda_cupti-13.0.85-py3-none-manylinux_2_25_x86_64.whl (10.7 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.7/10.7 MB 18.0 MB/s  0:00:00
+Collecting nvidia-cublas==13.1.1.3.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch)
+  Downloading nvidia_cublas-13.1.1.3-py3-none-manylinux_2_27_x86_64.whl (423.1 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 423.1/423.1 MB 16.4 MB/s  0:00:27
+Collecting nvidia-cuda-nvrtc==13.0.88.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch)
+  Downloading nvidia_cuda_nvrtc-13.0.88-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl (90.2 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 90.2/90.2 MB 16.0 MB/s  0:00:05
+Collecting nvidia-nvtx==13.0.85.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch)
+  Downloading nvidia_nvtx-13.0.85-py3-none-manylinux1_x86_64.manylinux_2_5_x86_64.whl (148 kB)
+Collecting nvidia-nvjitlink<14,>=13.0.88 (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch)
+  Downloading nvidia_nvjitlink-13.3.33-py3-none-manylinux2010_x86_64.manylinux_2_12_x86_64.whl (40.7 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 40.7/40.7 MB 17.4 MB/s  0:00:02
+Collecting nvidia-cufft==12.0.0.61.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch)
+  Downloading nvidia_cufft-12.0.0.61-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (214.1 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 214.1/214.1 MB 15.8 MB/s  0:00:13
+Collecting nvidia-cuda-runtime==13.0.96.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch)
+  Downloading nvidia_cuda_runtime-13.0.96-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (2.2 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 16.5 MB/s  0:00:00
+Collecting nvidia-curand==10.4.0.35.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch)
+  Downloading nvidia_curand-10.4.0.35-py3-none-manylinux_2_27_x86_64.whl (59.5 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 59.5/59.5 MB 18.0 MB/s  0:00:03
+Collecting nvidia-cufile==1.15.1.6.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch)
+  Downloading nvidia_cufile-1.15.1.6-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (1.2 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 14.6 MB/s  0:00:00
+Collecting nvidia-cusparse==12.6.3.3.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch)
+  Downloading nvidia_cusparse-12.6.3.3-py3-none-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (145.9 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 145.9/145.9 MB 17.9 MB/s  0:00:08
+Collecting nvidia-cusolver==12.0.4.66.* (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch)
+  Downloading nvidia_cusolver-12.0.4.66-py3-none-manylinux_2_27_x86_64.whl (200.9 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 200.9/200.9 MB 17.6 MB/s  0:00:11
+Collecting cuda-pathfinder>=1.4.2 (from cuda-bindings<14,>=13.0.3->torch)
+  Downloading cuda_pathfinder-1.6.0-py3-none-any.whl (54 kB)
+Collecting numpy (from torchvision)
+  Downloading numpy-2.2.6-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (16.8 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.8/16.8 MB 16.7 MB/s  0:00:01
+Collecting pillow!=8.3.*,>=5.3.0 (from torchvision)
+  Downloading pillow-12.3.0-cp310-cp310-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (6.9 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.9/6.9 MB 20.0 MB/s  0:00:00
+Collecting mpmath<1.4,>=1.1.0 (from sympy>=1.13.3->torch)
+  Downloading mpmath-1.3.0-py3-none-any.whl (536 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 536.2/536.2 kB 24.4 MB/s  0:00:00
+Collecting MarkupSafe>=2.0 (from jinja2->torch)
+  Downloading markupsafe-3.0.3-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (20 kB)
+Installing collected packages: nvidia-cusparselt-cu13, mpmath, cuda-toolkit, typing-extensions, triton, sympy, pillow, nvidia-nvtx, nvidia-nvshmem-cu13, nvidia-nvjitlink, nvidia-nccl-cu13, nvidia-curand, nvidia-cufile, nvidia-cuda-runtime, nvidia-cuda-nvrtc, nvidia-cuda-cupti, numpy, networkx, MarkupSafe, fsspec, filelock, cuda-pathfinder, nvidia-cusparse, nvidia-cufft, nvidia-cublas, jinja2, cuda-bindings, nvidia-cusolver, nvidia-cudnn-cu13, torch, torchvision
+
+Successfully installed MarkupSafe-3.0.3 cuda-bindings-13.3.1 cuda-pathfinder-1.6.0 cuda-toolkit-13.0.3.0 filelock-3.32.2 fsspec-2026.7.0 jinja2-3.1.6 mpmath-1.3.0 networkx-3.4.2 numpy-2.2.6 nvidia-cublas-13.1.1.3 nvidia-cuda-cupti-13.0.85 nvidia-cuda-nvrtc-13.0.88 nvidia-cuda-runtime-13.0.96 nvidia-cudnn-cu13-9.20.0.48 nvidia-cufft-12.0.0.61 nvidia-cufile-1.15.1.6 nvidia-curand-10.4.0.35 nvidia-cusolver-12.0.4.66 nvidia-cusparse-12.6.3.3 nvidia-cusparselt-cu13-0.8.1 nvidia-nccl-cu13-2.29.7 nvidia-nvjitlink-13.3.33 nvidia-nvshmem-cu13-3.4.5 nvidia-nvtx-13.0.85 pillow-12.3.0 sympy-1.14.0 torch-2.13.0 torchvision-0.28.0 triton-3.7.1 typing-extensions-4.16.0
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+Collecting transformers>=4.49
+  Downloading transformers-5.14.1-py3-none-any.whl (11.6 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.6/11.6 MB 24.7 MB/s  0:00:00
+Collecting accelerate
+  Downloading accelerate-1.14.0-py3-none-any.whl (389 kB)
+Collecting modelscope
+  Downloading modelscope-1.39.0-py3-none-any.whl (6.0 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.0/6.0 MB 78.4 MB/s  0:00:00
+Requirement already satisfied: pillow in /root/miniconda3/envs/vl/lib/python3.10/site-packages (12.3.0)
+Collecting qwen-vl-utils[decord]
+  Downloading qwen_vl_utils-0.0.14-py3-none-any.whl (8.1 kB)
+Collecting huggingface-hub<2.0,>=1.5.0 (from transformers>=4.49)
+  Downloading huggingface_hub-1.25.1-py3-none-any.whl (774 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 774.9/774.9 kB 91.6 MB/s  0:00:00
+Requirement already satisfied: numpy>=1.17 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from transformers>=4.49) (2.2.6)
+Requirement already satisfied: packaging>=20.0 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from transformers>=4.49) (26.0)
+Collecting pyyaml>=5.1 (from transformers>=4.49)
+  Downloading pyyaml-6.0.3-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (770 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 770.3/770.3 kB 96.3 MB/s  0:00:00
+Collecting regex>=2025.10.22 (from transformers>=4.49)
+  Downloading regex-2026.7.19-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (793 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 793.5/793.5 kB 167.0 MB/s  0:00:00
+Collecting tokenizers<=0.23.0,>=0.22.0 (from transformers>=4.49)
+  Downloading tokenizers-0.22.2-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.3 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.3/3.3 MB 58.7 MB/s  0:00:00
+Collecting typer (from transformers>=4.49)
+  Downloading typer-0.27.0-py3-none-any.whl (122 kB)
+Collecting safetensors>=0.8.0 (from transformers>=4.49)
+  Downloading safetensors-0.8.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (516 kB)
+Collecting tqdm>=4.60 (from transformers>=4.49)
+  Downloading tqdm-4.70.0-py3-none-any.whl (80 kB)
+Collecting click<9.0.0,>=8.4.2 (from huggingface-hub<2.0,>=1.5.0->transformers>=4.49)
+  Downloading click-8.4.2-py3-none-any.whl (119 kB)
+Requirement already satisfied: filelock>=3.10.0 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from huggingface-hub<2.0,>=1.5.0->transformers>=4.49) (3.32.2)
+Requirement already satisfied: fsspec>=2023.5.0 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from huggingface-hub<2.0,>=1.5.0->transformers>=4.49) (2026.7.0)
+Collecting hf-xet<2.0.0,>=1.5.1 (from huggingface-hub<2.0,>=1.5.0->transformers>=4.49)
+  Downloading hf_xet-1.5.2-cp38-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (4.4 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.4/4.4 MB 11.3 MB/s  0:00:00
+Collecting httpx<1,>=0.23.0 (from huggingface-hub<2.0,>=1.5.0->transformers>=4.49)
+  Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+Requirement already satisfied: typing-extensions>=4.1.0 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from huggingface-hub<2.0,>=1.5.0->transformers>=4.49) (4.16.0)
+Collecting anyio (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers>=4.49)
+  Downloading anyio-4.14.2-py3-none-any.whl (125 kB)
+Collecting certifi (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers>=4.49)
+  Downloading certifi-2026.7.22-py3-none-any.whl (136 kB)
+Collecting httpcore==1.* (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers>=4.49)
+  Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+Collecting idna (from httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers>=4.49)
+  Downloading idna-3.18-py3-none-any.whl (65 kB)
+Collecting h11>=0.16 (from httpcore==1.*->httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers>=4.49)
+  Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+Collecting psutil (from accelerate)
+  Downloading psutil-7.2.2-cp36-abi3-manylinux2010_x86_64.manylinux_2_12_x86_64.manylinux_2_28_x86_64.whl (155 kB)
+Requirement already satisfied: torch>=2.0.0 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from accelerate) (2.13.0)
+Collecting av (from qwen-vl-utils[decord])
+  Downloading av-17.1.0-cp310-cp310-manylinux_2_28_x86_64.whl (36.6 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 36.6/36.6 MB 18.5 MB/s  0:00:01
+Collecting requests (from qwen-vl-utils[decord])
+  Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+Collecting decord (from qwen-vl-utils[decord])
+  Downloading decord-0.6.0-py3-none-manylinux2010_x86_64.whl (13.6 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 13.6/13.6 MB 22.8 MB/s  0:00:00
+Collecting modelscope-hub>=0.1.8 (from modelscope)
+  Downloading modelscope_hub-0.1.8-py3-none-any.whl (149 kB)
+Requirement already satisfied: setuptools in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from modelscope) (83.0.0)
+Collecting urllib3>=1.26 (from modelscope)
+  Downloading urllib3-2.7.0-py3-none-any.whl (131 kB)
+Collecting charset_normalizer<4,>=2 (from requests->qwen-vl-utils[decord])
+  Downloading charset_normalizer-3.4.9-cp310-cp310-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (223 kB)
+Requirement already satisfied: sympy>=1.13.3 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from torch>=2.0.0->accelerate) (1.14.0)
+Requirement already satisfied: networkx>=2.5.1 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from torch>=2.0.0->accelerate) (3.4.2)
+Requirement already satisfied: jinja2 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from torch>=2.0.0->accelerate) (3.1.6)
+Requirement already satisfied: cuda-toolkit==13.0.3 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch>=2.0.0->accelerate) (13.0.3.0)
+Requirement already satisfied: cuda-bindings<14,>=13.0.3 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from torch>=2.0.0->accelerate) (13.3.1)
+Requirement already satisfied: nvidia-cudnn-cu13==9.20.0.48 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from torch>=2.0.0->accelerate) (9.20.0.48)
+Requirement already satisfied: nvidia-cusparselt-cu13==0.8.1 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from torch>=2.0.0->accelerate) (0.8.1)
+Requirement already satisfied: nvidia-nccl-cu13==2.29.7 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from torch>=2.0.0->accelerate) (2.29.7)
+Requirement already satisfied: nvidia-nvshmem-cu13==3.4.5 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from torch>=2.0.0->accelerate) (3.4.5)
+Requirement already satisfied: triton==3.7.1 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from torch>=2.0.0->accelerate) (3.7.1)
+Requirement already satisfied: nvidia-cublas==13.1.1.3.* in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch>=2.0.0->accelerate) (13.1.1.3)
+Requirement already satisfied: nvidia-cuda-nvrtc==13.0.88.* in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch>=2.0.0->accelerate) (13.0.88)
+Requirement already satisfied: nvidia-cufile==1.15.1.6.* in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch>=2.0.0->accelerate) (1.15.1.6)
+Requirement already satisfied: nvidia-cufft==12.0.0.61.* in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch>=2.0.0->accelerate) (12.0.0.61)
+Requirement already satisfied: nvidia-nvjitlink<14,>=13.0.88 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch>=2.0.0->accelerate) (13.3.33)
+Requirement already satisfied: nvidia-curand==10.4.0.35.* in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch>=2.0.0->accelerate) (10.4.0.35)
+Requirement already satisfied: nvidia-cuda-cupti==13.0.85.* in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch>=2.0.0->accelerate) (13.0.85)
+Requirement already satisfied: nvidia-cusolver==12.0.4.66.* in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch>=2.0.0->accelerate) (12.0.4.66)
+Requirement already satisfied: nvidia-cusparse==12.6.3.3.* in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch>=2.0.0->accelerate) (12.6.3.3)
+Requirement already satisfied: nvidia-nvtx==13.0.85.* in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch>=2.0.0->accelerate) (13.0.85)
+Requirement already satisfied: nvidia-cuda-runtime==13.0.96.* in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from cuda-toolkit[cublas,cudart,cufft,cufile,cupti,curand,cusolver,cusparse,nvjitlink,nvrtc,nvtx]==13.0.3; platform_system == "Linux"->torch>=2.0.0->accelerate) (13.0.96)
+Requirement already satisfied: cuda-pathfinder>=1.4.2 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from cuda-bindings<14,>=13.0.3->torch>=2.0.0->accelerate) (1.6.0)
+Requirement already satisfied: mpmath<1.4,>=1.1.0 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from sympy>=1.13.3->torch>=2.0.0->accelerate) (1.3.0)
+Collecting exceptiongroup>=1.0.2 (from anyio->httpx<1,>=0.23.0->huggingface-hub<2.0,>=1.5.0->transformers>=4.49)
+  Downloading exceptiongroup-1.3.1-py3-none-any.whl (16 kB)
+Requirement already satisfied: MarkupSafe>=2.0 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from jinja2->torch>=2.0.0->accelerate) (3.0.3)
+Collecting shellingham>=1.3.0 (from typer->transformers>=4.49)
+  Downloading shellingham-1.5.4-py2.py3-none-any.whl (9.8 kB)
+Collecting rich>=13.8.0 (from typer->transformers>=4.49)
+  Downloading rich-15.0.0-py3-none-any.whl (310 kB)
+Collecting annotated-doc>=0.0.2 (from typer->transformers>=4.49)
+  Downloading annotated_doc-0.0.5-py3-none-any.whl (5.3 kB)
+Collecting markdown-it-py>=2.2.0 (from rich>=13.8.0->typer->transformers>=4.49)
+  Downloading markdown_it_py-4.2.0-py3-none-any.whl (91 kB)
+Collecting pygments<3.0.0,>=2.13.0 (from rich>=13.8.0->typer->transformers>=4.49)
+  Downloading pygments-2.20.0-py3-none-any.whl (1.2 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.2/1.2 MB 45.7 MB/s  0:00:00
+Collecting mdurl~=0.1 (from markdown-it-py>=2.2.0->rich>=13.8.0->typer->transformers>=4.49)
+  Downloading mdurl-0.1.2-py3-none-any.whl (10.0 kB)
+Installing collected packages: urllib3, tqdm, shellingham, safetensors, regex, pyyaml, pygments, psutil, mdurl, idna, hf-xet, h11, exceptiongroup, decord, click, charset_normalizer, certifi, av, annotated-doc, requests, markdown-it-py, httpcore, anyio, rich, qwen-vl-utils, modelscope-hub, httpx, typer, modelscope, huggingface-hub, tokenizers, accelerate, transformers
+
+Successfully installed accelerate-1.14.0 annotated-doc-0.0.5 anyio-4.14.2 av-17.1.0 certifi-2026.7.22 charset_normalizer-3.4.9 click-8.4.2 decord-0.6.0 exceptiongroup-1.3.1 h11-0.16.0 hf-xet-1.5.2 httpcore-1.0.9 httpx-0.28.1 huggingface-hub-1.25.1 idna-3.18 markdown-it-py-4.2.0 mdurl-0.1.2 modelscope-1.39.0 modelscope-hub-0.1.8 psutil-7.2.2 pygments-2.20.0 pyyaml-6.0.3 qwen-vl-utils-0.0.14 regex-2026.7.19 requests-2.34.2 rich-15.0.0 safetensors-0.8.0 shellingham-1.5.4 tokenizers-0.22.2 tqdm-4.70.0 transformers-5.14.1 typer-0.27.0 urllib3-2.7.0
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+PIP_OK
+Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+Collecting transformers==4.51.3
+  Downloading transformers-4.51.3-py3-none-any.whl (10.4 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.4/10.4 MB 12.3 MB/s  0:00:00
+Requirement already satisfied: filelock in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from transformers==4.51.3) (3.32.2)
+Collecting huggingface-hub<1.0,>=0.30.0 (from transformers==4.51.3)
+  Downloading huggingface_hub-0.36.2-py3-none-any.whl (566 kB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 566.4/566.4 kB 11.0 MB/s  0:00:00
+Requirement already satisfied: numpy>=1.17 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from transformers==4.51.3) (2.2.6)
+Requirement already satisfied: packaging>=20.0 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from transformers==4.51.3) (26.0)
+Requirement already satisfied: pyyaml>=5.1 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from transformers==4.51.3) (6.0.3)
+Requirement already satisfied: regex!=2019.12.17 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from transformers==4.51.3) (2026.7.19)
+Requirement already satisfied: requests in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from transformers==4.51.3) (2.34.2)
+Collecting tokenizers<0.22,>=0.21 (from transformers==4.51.3)
+  Downloading tokenizers-0.21.4-cp39-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (3.1 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.1/3.1 MB 14.4 MB/s  0:00:00
+Requirement already satisfied: safetensors>=0.4.3 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from transformers==4.51.3) (0.8.0)
+Requirement already satisfied: tqdm>=4.27 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from transformers==4.51.3) (4.70.0)
+Requirement already satisfied: fsspec>=2023.5.0 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from huggingface-hub<1.0,>=0.30.0->transformers==4.51.3) (2026.7.0)
+Requirement already satisfied: hf-xet<2.0.0,>=1.1.3 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from huggingface-hub<1.0,>=0.30.0->transformers==4.51.3) (1.5.2)
+Requirement already satisfied: typing-extensions>=3.7.4.3 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from huggingface-hub<1.0,>=0.30.0->transformers==4.51.3) (4.16.0)
+Requirement already satisfied: charset_normalizer<4,>=2 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from requests->transformers==4.51.3) (3.4.9)
+Requirement already satisfied: idna<4,>=2.5 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from requests->transformers==4.51.3) (3.18)
+Requirement already satisfied: urllib3<3,>=1.26 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from requests->transformers==4.51.3) (2.7.0)
+Requirement already satisfied: certifi>=2023.5.7 in /root/miniconda3/envs/vl/lib/python3.10/site-packages (from requests->transformers==4.51.3) (2026.7.22)
+Installing collected packages: huggingface-hub, tokenizers, transformers
+  Attempting uninstall: huggingface-hub
+    Found existing installation: huggingface_hub 1.25.1
+    Uninstalling huggingface_hub-1.25.1:
+      Successfully uninstalled huggingface_hub-1.25.1
+  Attempting uninstall: tokenizers
+    Found existing installation: tokenizers 0.22.2
+    Uninstalling tokenizers-0.22.2:
+      Successfully uninstalled tokenizers-0.22.2
+  Attempting uninstall: transformers
+    Found existing installation: transformers 5.14.1
+    Uninstalling transformers-5.14.1:
+      Successfully uninstalled transformers-5.14.1
+
+Successfully installed huggingface-hub-0.36.2 tokenizers-0.21.4 transformers-4.51.3
+WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.

@@ -8,15 +8,9 @@ models/
 # 压缩包
 *.zip
 
-# Python
+# Python 临时文件
 __pycache__/
 *.pyc
 
-# 日志
-*.log
-
-# 自动生成
-.autodl/
-
-# 系统文件
+# 系统
 .DS_Store
