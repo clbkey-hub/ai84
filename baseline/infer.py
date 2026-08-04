@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 """Baseline 推理脚本：Qwen2.5-VL-7B 对短视频做8字段语义标注
+
 用法:
+  # 原始模式（固定fps抽帧）
   python infer.py --video_dir <视频目录> --out <输出jsonl> [--limit N]
+
+  # v1: Scene detect 模式（按场景切换提取关键帧）
+  python infer.py --video_dir <视频目录> --out <输出jsonl> --use_scene_detect
 """
-import argparse, json, os, re, sys, time
+import argparse, json, os, re, sys, time, tempfile
 
 import torch
 from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
@@ -50,19 +55,76 @@ def extract_json(text: str) -> dict:
             return {}
 
 
+def extract_keyframes(video_path: str, max_frames: int = 12, fps: float = 1.0):
+    """Scene detect: 按场景切换检测关键帧，场景过少时回退到均匀采样
+
+    返回: (frame_paths, temp_dir) — frame_paths 为图像路径列表，temp_dir 用完需清理
+    """
+    import cv2
+    from scenedetect import detect, ContentDetector, open_video
+
+    tmpdir = tempfile.mkdtemp(prefix="keyframes_")
+    frames = []
+
+    try:
+        video = open_video(video_path)
+        scene_list = detect(video_path, ContentDetector(threshold=5.0))
+    except Exception:
+        scene_list = []
+
+    cap = cv2.VideoCapture(video_path)
+    total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    video_fps = cap.get(cv2.CAP_PROP_FPS)
+
+    # 场景数足够 → 取每场景中间帧；场景太少 → 回退均匀采样
+    if scene_list and len(scene_list) >= 3:
+        for i, (start, end) in enumerate(scene_list):
+            if i >= max_frames:
+                break
+            mid = int((start.frame_num + end.frame_num) / 2)
+            cap.set(cv2.CAP_PROP_POS_FRAMES, mid)
+            ret, frame = cap.read()
+            if ret:
+                path = os.path.join(tmpdir, f"scene_{i:03d}.jpg")
+                cv2.imwrite(path, frame)
+                frames.append(path)
+        method = f"scene_detect({len(frames)}帧)"
+    else:
+        # 回退：按 fps 均匀采样
+        interval = int(video_fps / fps) if fps > 0 else int(video_fps)
+        interval = max(interval, 1)
+        count = 0
+        for fn in range(0, total_frames, interval):
+            if count >= max_frames:
+                break
+            cap.set(cv2.CAP_PROP_POS_FRAMES, fn)
+            ret, frame = cap.read()
+            if ret:
+                path = os.path.join(tmpdir, f"uniform_{count:03d}.jpg")
+                cv2.imwrite(path, frame)
+                frames.append(path)
+                count += 1
+        method = f"uniform({len(frames)}帧)"
+
+    cap.release()
+    return frames, tmpdir, method
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--video_dir", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--limit", type=int, default=0, help="只跑前N条(调试用)")
     ap.add_argument("--max_pixels", type=int, default=200704, help="每帧最大像素(默认448*448)")
-    ap.add_argument("--fps", type=float, default=1.0, help="抽帧率")
+    ap.add_argument("--fps", type=float, default=1.0, help="抽帧率(原始模式)")
+    ap.add_argument("--use_scene_detect", action="store_true", help="v1: 用场景切换检测替换固定fps")
+    ap.add_argument("--max_keyframes", type=int, default=12, help="scene detect 最大关键帧数")
     args = ap.parse_args()
 
     videos = sorted(f for f in os.listdir(args.video_dir) if f.endswith(".mp4"))
     if args.limit:
         videos = videos[: args.limit]
-    print(f"待推理视频数: {len(videos)}")
+    print(f"待推理视频数: {len(videos)}  mode={'scene_detect' if args.use_scene_detect else 'fps'}")
 
     print("加载模型...", MODEL_PATH)
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
@@ -74,18 +136,40 @@ def main():
     results, raw_log = [], []
     for i, vf in enumerate(videos):
         t0 = time.time()
-        messages = [{
-            "role": "user",
-            "content": [
-                {"type": "video", "video": os.path.join(args.video_dir, vf),
-                 "max_pixels": args.max_pixels, "fps": args.fps},
-                {"type": "text", "text": PROMPT},
-            ],
-        }]
-        text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        image_inputs, video_inputs, video_kwargs = process_vision_info(messages, return_video_kwargs=True)
-        inputs = processor(text=[text], images=image_inputs, videos=video_inputs,
-                           padding=True, return_tensors="pt", **video_kwargs).to("cuda:0")
+        video_path = os.path.join(args.video_dir, vf)
+
+        if args.use_scene_detect:
+            # ── v1: Scene detect 关键帧 ──
+            frame_paths, tmpdir, method = extract_keyframes(
+                video_path, max_frames=args.max_keyframes, fps=args.fps)
+            content = []
+            for fp in frame_paths:
+                content.append({"type": "image", "image": fp,
+                                "max_pixels": args.max_pixels})
+            content.append({"type": "text", "text": PROMPT})
+            messages = [{"role": "user", "content": content}]
+            text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+            image_inputs, video_inputs, video_kwargs = process_vision_info(
+                messages, return_video_kwargs=True)
+            inputs = processor(text=[text], images=image_inputs, videos=video_inputs,
+                               padding=True, return_tensors="pt", **video_kwargs).to("cuda:0")
+        else:
+            # ── baseline: 原始 fps 视频模式 ──
+            messages = [{
+                "role": "user",
+                "content": [
+                    {"type": "video", "video": video_path,
+                     "max_pixels": args.max_pixels, "fps": args.fps},
+                    {"type": "text", "text": PROMPT},
+                ],
+            }]
+            text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+            image_inputs, video_inputs, video_kwargs = process_vision_info(
+                messages, return_video_kwargs=True)
+            inputs = processor(text=[text], images=image_inputs, videos=video_inputs,
+                               padding=True, return_tensors="pt", **video_kwargs).to("cuda:0")
+            method = f"fps{args.fps}"
+
         with torch.inference_mode():
             gen = model.generate(**inputs, max_new_tokens=512, do_sample=False)
         out_ids = gen[:, inputs.input_ids.shape[1]:]
@@ -93,9 +177,14 @@ def main():
         raw = extract_json(out_text)
         rec = normalize_record(vf, raw)
         results.append(rec)
-        raw_log.append({"video_file": vf, "raw_output": out_text})
-        print(f"[{i+1}/{len(videos)}] {vf} {time.time()-t0:.1f}s -> "
+        raw_log.append({"video_file": vf, "raw_output": out_text, "method": method})
+        print(f"[{i+1}/{len(videos)}] {vf} {time.time()-t0:.1f}s [{method}] -> "
               f"{rec['visual_source_type']} | {rec['selling_point']}")
+
+        # 清理临时帧文件
+        if args.use_scene_detect:
+            import shutil
+            shutil.rmtree(tmpdir, ignore_errors=True)
 
     with open(args.out, "w", encoding="utf-8") as f:
         for r in results:
