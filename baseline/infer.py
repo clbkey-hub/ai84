@@ -236,7 +236,7 @@ def main():
     ap.add_argument("--video_dir", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--limit", type=int, default=0, help="只跑前N条(调试用)")
-    ap.add_argument("--max_pixels", type=int, default=351232, help="每帧最大像素(默认592*592)")
+    ap.add_argument("--max_pixels", type=int, default=250880, help="每帧最大像素(默认501*501)")
     ap.add_argument("--fps", type=float, default=1.0, help="抽帧率(原始模式)")
     ap.add_argument("--use_scene_detect", action="store_true", help="v1: 用场景切换检测替换固定fps")
     ap.add_argument("--max_keyframes", type=int, default=12, help="scene detect 最大关键帧数")
