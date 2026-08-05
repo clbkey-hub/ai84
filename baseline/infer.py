@@ -159,7 +159,7 @@ def _get_whisper():
     return _whisper_model
 
 
-def _vlm_ocr(frame_paths: list, model, processor, max_pixels: int = 401408) -> str:
+def _vlm_ocr(frame_paths: list, model, processor, max_pixels: int = 200704) -> str:
     """用 Qwen2.5-VL 自身做 OCR，返回提取的文字"""
     from qwen_vl_utils import process_vision_info
 
@@ -208,9 +208,9 @@ def extract_multimodal_text(video_path: str, frame_paths: list, model=None, proc
 
     # ── OCR: Qwen自身提取关键帧画面文字 ──
     if model is not None and processor is not None:
-        ocr_frames = frame_paths[:3] + frame_paths[-3:] if len(frame_paths) > 6 else frame_paths
+        ocr_frames = frame_paths[:2] + frame_paths[-2:] if len(frame_paths) > 4 else frame_paths
         try:
-            ocr_result = _vlm_ocr(ocr_frames, model, processor, max_pixels=401408)
+            ocr_result = _vlm_ocr(ocr_frames, model, processor)
             if ocr_result and "无文字" not in ocr_result:
                 info_parts.append(f"【画面文字】{ocr_result}")
         except Exception:
@@ -236,7 +236,7 @@ def main():
     ap.add_argument("--video_dir", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--limit", type=int, default=0, help="只跑前N条(调试用)")
-    ap.add_argument("--max_pixels", type=int, default=401408, help="每帧最大像素(默认634*634)")
+    ap.add_argument("--max_pixels", type=int, default=351232, help="每帧最大像素(默认592*592)")
     ap.add_argument("--fps", type=float, default=1.0, help="抽帧率(原始模式)")
     ap.add_argument("--use_scene_detect", action="store_true", help="v1: 用场景切换检测替换固定fps")
     ap.add_argument("--max_keyframes", type=int, default=12, help="scene detect 最大关键帧数")
