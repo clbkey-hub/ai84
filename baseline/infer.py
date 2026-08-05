@@ -63,6 +63,25 @@ FEWSHOT_PROMPT = f"""你是游戏买量广告视频的专业标注员。请观�
 只输出JSON，不要其他文字："""
 
 
+def build_multimodal_prompt(multi_text: str, base_prompt: str) -> str:
+    """v3: 结构化多模态prompt — 文字辅助视觉字段，纯视觉字段不受干扰"""
+    if not multi_text:
+        return base_prompt
+
+    return f"""你是游戏买量广告视频的专业标注员。请综合以下信息输出8个标注字段。
+
+=== 视频画面文字与语音信息（辅助参考）===
+{multi_text}
+=== 信息结束 ===
+
+标注规则：
+- has_real_person（真人出镜）和 core_action（游戏动作）：**只看画面**，忽略文字信息
+- visual_source_type、selling_point、cta_type、claim_type、growth_payoff：结合画面+上方的文字语音信息综合判断
+- narrative_structure（开头5秒叙事结构）：优先参考语音和画面文字中的叙事线索
+
+{base_prompt.split('字段定义（必须严格从可选值中选择，不得自造标签）：')[1] if '字段定义' in base_prompt else base_prompt}"""
+
+
 def extract_json(text: str) -> dict:
     """从模型输出中提取JSON对象"""
     m = re.search(r"\{.*\}", text, re.S)
@@ -266,8 +285,8 @@ def main():
             for fp in frame_paths:
                 content.append({"type": "image", "image": fp,
                                 "max_pixels": args.max_pixels})
-            # 多模态文字拼在 prompt 前面
-            final_prompt = (multi_text + "\n\n" + prompt) if multi_text else prompt
+            # 多模态文字拼在 prompt 前面（结构化路由）
+            final_prompt = build_multimodal_prompt(multi_text, prompt)
             content.append({"type": "text", "text": final_prompt})
             messages = [{"role": "user", "content": content}]
             text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
