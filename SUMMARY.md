@@ -19,9 +19,13 @@ exp-v1-scene-detect ───● v1（40.57 分，+4.26）  ← 当前
 
 ### v1 Scene Detect（exp-v1-scene-detect 分支）
 - 用 scenedetect 按场景切换提取关键帧（threshold=5.0，最多 12 帧）
-- 其他不变
 - 提交文件：`experiments/v1/submit_v1.jsonl`
-- 预估得分：**40.57 / 70**（+4.26）
+- 预估得分：**40.57 / 70**（+4.26 vs v0）
+
+### v2 Few-shot Prompt（exp-v2-prompt 分支）← 当前
+- 基于 v1 scene detect，加入 Few-shot 标注示例 + 各字段中文释义
+- 提交文件：`experiments/v2/train_pred_10_v2.jsonl`（仅自测）
+- 预估得分：**45.15 / 70**（+4.58 vs v1，累计 +8.84 vs v0）
 
 ---
 
