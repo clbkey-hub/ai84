@@ -132,6 +132,72 @@ def extract_keyframes(video_path: str, max_frames: int = 12, fps: float = 1.0):
     return frames, tmpdir, method
 
 
+# ── v3: ASR + OCR 多模态融合 ──
+_whisper_model = None
+_easyocr_reader = None
+
+
+def _get_whisper():
+    global _whisper_model
+    if _whisper_model is None:
+        import whisper
+        _whisper_model = whisper.load_model("base")
+    return _whisper_model
+
+
+def _get_easyocr():
+    global _easyocr_reader
+    if _easyocr_reader is None:
+        import easyocr
+        _easyocr_reader = easyocr.Reader(["ch_sim", "en"], gpu=True)
+    return _easyocr_reader
+
+
+def extract_multimodal_text(video_path: str, frame_paths: list):
+    """v3: 从视频提取音频文字(ASR) + 画面文字(OCR)，返回额外 prompt 文本"""
+    info_parts = []
+    import subprocess
+
+    # ── ASR: 提取音频文字 ──
+    audio_path = tempfile.mktemp(suffix=".wav")
+    try:
+        subprocess.run(
+            ["ffmpeg", "-i", video_path, "-vn", "-acodec", "pcm_s16le",
+             "-ar", "16000", "-ac", "1", "-y", audio_path, "-loglevel", "error"],
+            check=True, timeout=30)
+        model = _get_whisper()
+        result = model.transcribe(audio_path, language="zh", fp16=False)
+        audio_text = result["text"].strip()
+        if audio_text:
+            info_parts.append(f"【语音内容】{audio_text}")
+    except Exception:
+        pass
+    finally:
+        if os.path.exists(audio_path):
+            os.remove(audio_path)
+
+    # ── OCR: 提取关键帧画面文字 ──
+    ocr_texts = []
+    reader = _get_easyocr()
+    # 只 OCR 头尾帧（开头5秒+结尾5秒信息最丰富）
+    ocr_frames = frame_paths[:3] + frame_paths[-3:] if len(frame_paths) > 6 else frame_paths
+    seen = set()
+    for fp in ocr_frames:
+        try:
+            results = reader.readtext(fp, detail=0)
+            for t in results:
+                t = t.strip()
+                if t and t not in seen and len(t) >= 2:
+                    seen.add(t)
+                    ocr_texts.append(t)
+        except Exception:
+            pass
+    if ocr_texts:
+        info_parts.append(f"【画面文字】{'; '.join(ocr_texts)}")
+
+    return "\n".join(info_parts) if info_parts else ""
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--video_dir", required=True)
@@ -141,8 +207,9 @@ def main():
     ap.add_argument("--fps", type=float, default=1.0, help="抽帧率(原始模式)")
     ap.add_argument("--use_scene_detect", action="store_true", help="v1: 用场景切换检测替换固定fps")
     ap.add_argument("--max_keyframes", type=int, default=12, help="scene detect 最大关键帧数")
-    ap.add_argument("--use_cot", action="store_true", help="v2: 用Chain-of-Thought逐步推理prompt")
-    ap.add_argument("--max_tokens", type=int, default=512, help="最大生成token数(CoT需>512)")
+    ap.add_argument("--use_cot", action="store_true", help="v2: 用Few-shot增强prompt")
+    ap.add_argument("--max_tokens", type=int, default=512, help="最大生成token数")
+    ap.add_argument("--use_multimodal", action="store_true", help="v3: ASR语音+OCR画面文字融合")
     args = ap.parse_args()
 
     videos = sorted(f for f in os.listdir(args.video_dir) if f.endswith(".mp4"))
@@ -170,11 +237,24 @@ def main():
             # ── v1: Scene detect 关键帧 ──
             frame_paths, tmpdir, method = extract_keyframes(
                 video_path, max_frames=args.max_keyframes, fps=args.fps)
+
+            # ── v3: 多模态文字提取 ──
+            multi_text = ""
+            if args.use_multimodal:
+                try:
+                    multi_text = extract_multimodal_text(video_path, frame_paths)
+                    if multi_text:
+                        method += "+multimodal"
+                except Exception:
+                    pass
+
             content = []
             for fp in frame_paths:
                 content.append({"type": "image", "image": fp,
                                 "max_pixels": args.max_pixels})
-            content.append({"type": "text", "text": prompt})
+            # 多模态文字拼在 prompt 前面
+            final_prompt = (multi_text + "\n\n" + prompt) if multi_text else prompt
+            content.append({"type": "text", "text": final_prompt})
             messages = [{"role": "user", "content": content}]
             text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
             image_inputs, video_inputs, video_kwargs = process_vision_info(
