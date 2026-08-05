@@ -64,22 +64,15 @@ FEWSHOT_PROMPT = f"""你是游戏买量广告视频的专业标注员。请观�
 
 
 def build_multimodal_prompt(multi_text: str, base_prompt: str) -> str:
-    """v3: 结构化多模态prompt — 文字辅助视觉字段，纯视觉字段不受干扰"""
+    """v3: 多模态prompt — 文字辅助标注，关键字段只看画面"""
     if not multi_text:
         return base_prompt
 
-    return f"""你是游戏买量广告视频的专业标注员。请综合以下信息输出8个标注字段。
+    return f"""注意：has_real_person 和 core_action 必须**仅根据画面内容**判断，不要受文字信息影响。
 
-=== 视频画面文字与语音信息（辅助参考）===
 {multi_text}
-=== 信息结束 ===
 
-标注规则：
-- has_real_person（真人出镜）和 core_action（游戏动作）：**只看画面**，忽略文字信息
-- visual_source_type、selling_point、cta_type、claim_type、growth_payoff：结合画面+上方的文字语音信息综合判断
-- narrative_structure（开头5秒叙事结构）：优先参考语音和画面文字中的叙事线索
-
-{base_prompt.split('字段定义（必须严格从可选值中选择，不得自造标签）：')[1] if '字段定义' in base_prompt else base_prompt}"""
+{base_prompt}"""
 
 
 def extract_json(text: str) -> dict:
