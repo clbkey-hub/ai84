@@ -159,13 +159,13 @@ def _get_whisper():
     return _whisper_model
 
 
-def _vlm_ocr(frame_paths: list, model, processor) -> str:
+def _vlm_ocr(frame_paths: list, model, processor, max_pixels: int = 401408) -> str:
     """用 Qwen2.5-VL 自身做 OCR，返回提取的文字"""
     from qwen_vl_utils import process_vision_info
 
     content = []
     for fp in frame_paths:
-        content.append({"type": "image", "image": fp, "max_pixels": 200704})
+        content.append({"type": "image", "image": fp, "max_pixels": max_pixels})
     content.append({"type": "text", "text": OCR_PROMPT})
     messages = [{"role": "user", "content": content}]
 
@@ -210,7 +210,7 @@ def extract_multimodal_text(video_path: str, frame_paths: list, model=None, proc
     if model is not None and processor is not None:
         ocr_frames = frame_paths[:3] + frame_paths[-3:] if len(frame_paths) > 6 else frame_paths
         try:
-            ocr_result = _vlm_ocr(ocr_frames, model, processor)
+            ocr_result = _vlm_ocr(ocr_frames, model, processor, max_pixels=401408)
             if ocr_result and "无文字" not in ocr_result:
                 info_parts.append(f"【画面文字】{ocr_result}")
         except Exception:
@@ -219,12 +219,24 @@ def extract_multimodal_text(video_path: str, frame_paths: list, model=None, proc
     return "\n".join(info_parts) if info_parts else ""
 
 
+# ── v4: 标签联动规则后处理 ──
+def apply_label_rules(record: dict) -> dict:
+    """v4: 根据业务逻辑修正不可能的组合"""
+    # 录屏 → 一定不是真人
+    if record["visual_source_type"] == "录屏" and record["has_real_person"] == "有":
+        record["has_real_person"] = "无"
+    # 情景剧 → 一定有真人
+    if record["visual_source_type"] == "情景剧" and record["has_real_person"] == "无":
+        record["has_real_person"] = "有"
+    return record
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--video_dir", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--limit", type=int, default=0, help="只跑前N条(调试用)")
-    ap.add_argument("--max_pixels", type=int, default=200704, help="每帧最大像素(默认448*448)")
+    ap.add_argument("--max_pixels", type=int, default=401408, help="每帧最大像素(默认634*634)")
     ap.add_argument("--fps", type=float, default=1.0, help="抽帧率(原始模式)")
     ap.add_argument("--use_scene_detect", action="store_true", help="v1: 用场景切换检测替换固定fps")
     ap.add_argument("--max_keyframes", type=int, default=12, help="scene detect 最大关键帧数")
@@ -305,6 +317,7 @@ def main():
         out_text = processor.batch_decode(out_ids, skip_special_tokens=True)[0]
         raw = extract_json(out_text)
         rec = normalize_record(vf, raw)
+        rec = apply_label_rules(rec)  # v4: 标签联动修正
         results.append(rec)
         raw_log.append({"video_file": vf, "raw_output": out_text, "method": method})
         print(f"[{i+1}/{len(videos)}] {vf} {time.time()-t0:.1f}s [{method}] -> "
