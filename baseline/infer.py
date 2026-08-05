@@ -134,7 +134,14 @@ def extract_keyframes(video_path: str, max_frames: int = 12, fps: float = 1.0):
 
 # ── v3: ASR + OCR 多模态融合 ──
 _whisper_model = None
-_easyocr_reader = None
+
+OCR_PROMPT = """请仔细阅读这些视频关键帧中的所有可见文字，包括：
+- 画面上的字幕、标题、弹窗文字
+- 按钮文字（如"立即下载""登录领取"）
+- 数值信息（如战斗力、等级、奖励数量）
+- 任何其他可见的中文或英文文字
+
+请按原文原样逐条列出，一行一条。如果没有可见文字，回复"无文字"。"""
 
 
 def _get_whisper():
@@ -145,15 +152,31 @@ def _get_whisper():
     return _whisper_model
 
 
-def _get_easyocr():
-    global _easyocr_reader
-    if _easyocr_reader is None:
-        import easyocr
-        _easyocr_reader = easyocr.Reader(["ch_sim", "en"], gpu=True)
-    return _easyocr_reader
+def _vlm_ocr(frame_paths: list, model, processor) -> str:
+    """用 Qwen2.5-VL 自身做 OCR，返回提取的文字"""
+    from qwen_vl_utils import process_vision_info
+
+    content = []
+    for fp in frame_paths:
+        content.append({"type": "image", "image": fp, "max_pixels": 200704})
+    content.append({"type": "text", "text": OCR_PROMPT})
+    messages = [{"role": "user", "content": content}]
+
+    text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    image_inputs, video_inputs, video_kwargs = process_vision_info(messages, return_video_kwargs=True)
+    inputs = processor(text=[text], images=image_inputs, videos=video_inputs,
+                       padding=True, return_tensors="pt", **video_kwargs).to(model.device)
+
+    with torch.no_grad():
+        generated_ids = model.generate(**inputs, max_new_tokens=256, temperature=0, do_sample=False)
+    generated_ids_trimmed = [out_ids[len(in_ids):] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
+    result = processor.batch_decode(generated_ids_trimmed, skip_special_tokens=True)[0].strip()
+    if "无文字" in result:
+        return ""
+    return result
 
 
-def extract_multimodal_text(video_path: str, frame_paths: list):
+def extract_multimodal_text(video_path: str, frame_paths: list, model=None, processor=None):
     """v3: 从视频提取音频文字(ASR) + 画面文字(OCR)，返回额外 prompt 文本"""
     info_parts = []
     import subprocess
@@ -176,24 +199,15 @@ def extract_multimodal_text(video_path: str, frame_paths: list):
         if os.path.exists(audio_path):
             os.remove(audio_path)
 
-    # ── OCR: 提取关键帧画面文字 ──
-    ocr_texts = []
-    reader = _get_easyocr()
-    # 只 OCR 头尾帧（开头5秒+结尾5秒信息最丰富）
-    ocr_frames = frame_paths[:3] + frame_paths[-3:] if len(frame_paths) > 6 else frame_paths
-    seen = set()
-    for fp in ocr_frames:
+    # ── OCR: Qwen自身提取关键帧画面文字 ──
+    if model is not None and processor is not None:
+        ocr_frames = frame_paths[:3] + frame_paths[-3:] if len(frame_paths) > 6 else frame_paths
         try:
-            results = reader.readtext(fp, detail=0)
-            for t in results:
-                t = t.strip()
-                if t and t not in seen and len(t) >= 2:
-                    seen.add(t)
-                    ocr_texts.append(t)
+            ocr_result = _vlm_ocr(ocr_frames, model, processor)
+            if ocr_result and "无文字" not in ocr_result:
+                info_parts.append(f"【画面文字】{ocr_result}")
         except Exception:
             pass
-    if ocr_texts:
-        info_parts.append(f"【画面文字】{'; '.join(ocr_texts)}")
 
     return "\n".join(info_parts) if info_parts else ""
 
@@ -242,7 +256,7 @@ def main():
             multi_text = ""
             if args.use_multimodal:
                 try:
-                    multi_text = extract_multimodal_text(video_path, frame_paths)
+                    multi_text = extract_multimodal_text(video_path, frame_paths, model, processor)
                     if multi_text:
                         method += "+multimodal"
                 except Exception:
