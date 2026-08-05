@@ -1,0 +1,17 @@
+[
+ {
+  "video_file": "video_001.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"动画/CG\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"其他\",\n  \"selling_point\": \"世界观/IP代入\",\n  \"cta_type\": \"无明确CTA\",\n  \"claim_type\": [\"无明确承诺\"],\n  \"core_action\": [\"角色/装备展示\"],\n  \"growth_payoff\": [\"无明确承诺\"]\n}\n```",
+  "method": "scene_detect(8帧)+multimodal"
+ },
+ {
+  "video_file": "video_002.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"动画/CG\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"攻略建议\",\n  \"selling_point\": \"低门槛变强\",\n  \"cta_type\": \"无明确CTA\",\n  \"claim_type\": [\"无明确承诺\"],\n  \"core_action\": [\"角色/装备展示\"],\n  \"growth_payoff\": [\"战力大幅提升\"]\n}\n```",
+  "method": "scene_detect(12帧)+multimodal"
+ },
+ {
+  "video_file": "video_003.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"动画/CG\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"其他\",\n  \"selling_point\": \"其他\",\n  \"cta_type\": \"无明确CTA\",\n  \"claim_type\": [],\n  \"core_action\": [\"角色/装备展示\"],\n  \"growth_payoff\": []\n}\n```",
+  "method": "scene_detect(12帧)+multimodal"
+ }
+]

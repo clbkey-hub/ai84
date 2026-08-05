@@ -64,15 +64,10 @@ FEWSHOT_PROMPT = f"""你是游戏买量广告视频的专业标注员。请观�
 
 
 def build_multimodal_prompt(multi_text: str, base_prompt: str) -> str:
-    """v3: 多模态prompt — 文字辅助标注，关键字段只看画面"""
+    """v3: 多模态文字直接拼入prompt头部"""
     if not multi_text:
         return base_prompt
-
-    return f"""注意：has_real_person 和 core_action 必须**仅根据画面内容**判断，不要受文字信息影响。
-
-{multi_text}
-
-{base_prompt}"""
+    return multi_text + "\n\n" + base_prompt
 
 
 def extract_json(text: str) -> dict:
