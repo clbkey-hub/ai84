@@ -40,39 +40,27 @@ PROMPT = f"""你是游戏买量广告视频的专业标注员。请观看这条�
 只输出一个JSON对象，不要输出任何其他文字。格式：
 {{"visual_source_type": "...", "has_real_person": "...", "narrative_structure": "...", "selling_point": "...", "cta_type": "...", "claim_type": [...], "core_action": [...], "growth_payoff": [...]}}"""
 
-# ── v2: Chain-of-Thought 逐步推理 prompt ──
-COT_PROMPT = f"""你是游戏买量广告视频的专业标注员。关键帧按时间顺序排列：前几帧=视频开头，后几帧=视频结尾。
+# ── v2: Few-shot 示例增强 prompt ──
+FEWSHOT_PROMPT = f"""你是游戏买量广告视频的专业标注员。请观看关键帧，输出8个标注字段。
 
-请按以下步骤逐步分析，每步用1-2句话描述观察，最后输出JSON：
+字段定义（必须严格从可选值中选择，不得自造标签）：
 
-1.【画面类型】看全部关键帧，判断素材来源（{json.dumps(ENUMS['visual_source_type'], ensure_ascii=False)}）和真人出镜（有/无）。
+1. visual_source_type（画面素材，单选）: {json.dumps(ENUMS['visual_source_type'], ensure_ascii=False)}
+2. has_real_person（真人出镜，单选）: ["有", "无"]
+3. narrative_structure（开头5秒叙事，单选）: {json.dumps(ENUMS['narrative_structure'], ensure_ascii=False)}
+   "爽感直给"=开局展示暴击/掉落/暴涨; "冲突引入"=展示失败/困境; "攻略建议"=教学口吻; "悬念提问"=疑问开场; "逆袭叙事"=先弱后强; "卡关反转"=失败→换策略→成功; "福利展示"=展示奖励; "其他"
+4. selling_point（核心卖点，单选）: {json.dumps(ENUMS['selling_point'], ensure_ascii=False)}
+   "爆装刺激"=满地爆装备; "低门槛变强"=轻松挂机变强; "世界观/IP代入"=IP情怀; "失败纠正"=纠正操作; "弱者逆袭"=弱者变强; "收集养成"=收集养成; "其他"
+5. cta_type（结尾行动号召，单选）: {json.dumps(ENUMS['cta_type'], ensure_ascii=False)}
+6. claim_type（利益承诺，多选≤{MULTI_LIMIT['claim_type']}）: {json.dumps(ENUMS['claim_type'], ensure_ascii=False)}
+7. core_action（游戏动作，多选≤{MULTI_LIMIT['core_action']}）: {json.dumps(ENUMS['core_action'], ensure_ascii=False)}
+8. growth_payoff（成长收益，多选≤{MULTI_LIMIT['growth_payoff']}）: {json.dumps(ENUMS['growth_payoff'], ensure_ascii=False)}
 
-2.【开头叙事】重点看前几帧（开头约5秒）：视频如何吸引人？
-   - 爽感直给：开局直接展示暴击/装备掉落/战力暴涨画面
-   - 冲突引入：展示失败/卡关/陷入困境
-   - 攻略建议：教学口吻"教你如何..."
-   - 悬念提问：疑问句开场"你知道..."
-   - 逆袭叙事：先弱后强
-   - 卡关反转：打不过→换策略→成功
-   - 福利展示：展示福利奖励
-   - 其他
+标注示例（供参考风格，不要照抄）：
+示例视频：开头角色打怪爆满地装备，中间战力暴涨到9999，结尾"立即下载"按钮。
+正确输出：{{"visual_source_type": "实机+包装", "has_real_person": "无", "narrative_structure": "爽感直给", "selling_point": "爆装刺激", "cta_type": "立即体验", "claim_type": ["高爆率"], "core_action": ["自动战斗/挂机", "Boss战"], "growth_payoff": ["战力大幅提升", "装备获得或升级"]}}
 
-3.【核心卖点】整条视频最吸引玩家的点（{json.dumps(ENUMS['selling_point'], ensure_ascii=False)}），必须选1个。
-
-4.【游戏动作】展示了哪些玩法（多选≤{MULTI_LIMIT['core_action']}）：{json.dumps(ENUMS['core_action'], ensure_ascii=False)}
-
-5.【成长收益】展示了什么成果（多选≤{MULTI_LIMIT['growth_payoff']}）：{json.dumps(ENUMS['growth_payoff'], ensure_ascii=False)}
-
-6.【结尾CTA】看后几帧（结尾约5秒）：行动号召（{json.dumps(ENUMS['cta_type'], ensure_ascii=False)}）
-
-7.【利益承诺】承诺了什么（多选≤{MULTI_LIMIT['claim_type']}）：{json.dumps(ENUMS['claim_type'], ensure_ascii=False)}
-
-示例参考：
-视频开头角色打怪爆满地装备，中间角色升级战力涨到9999，结尾出现"立即下载"。
-→ 开头展示爆装场景=爽感直给，卖点=爆装刺激，动作=自动战斗+Boss战，收益=战力大幅提升+装备获得，CTA=立即体验，承诺=高爆率
-→ {{"visual_source_type": "实机+包装", "has_real_person": "无", "narrative_structure": "爽感直给", "selling_point": "爆装刺激", "cta_type": "立即体验", "claim_type": ["高爆率"], "core_action": ["自动战斗/挂机", "Boss战"], "growth_payoff": ["战力大幅提升", "装备获得或升级"]}}
-
-现在分析并输出JSON："""
+只输出JSON，不要其他文字："""
 
 
 def extract_json(text: str) -> dict:
@@ -163,7 +151,7 @@ def main():
     print(f"待推理视频数: {len(videos)}  mode={'scene_detect' if args.use_scene_detect else 'fps'}"
           f"  prompt={'cot' if args.use_cot else 'baseline'}")
 
-    prompt = COT_PROMPT if args.use_cot else PROMPT
+    prompt = FEWSHOT_PROMPT if args.use_cot else PROMPT
     max_tokens = args.max_tokens if args.use_cot else 512
 
     print("加载模型...", MODEL_PATH)
