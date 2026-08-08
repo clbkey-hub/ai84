@@ -1,0 +1,52 @@
+[
+ {
+  "video_file": "video_001.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"动画/CG\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"悬念提问\",\n  \"selling_point\": \"世界观/IP代入\",\n  \"cta_type\": \"无明确CTA\",\n  \"claim_type\": [\"无明确承诺\"],\n  \"core_action\": [\"Boss战\"],\n  \"growth_payoff\": [\"外观进化\"]\n}\n```",
+  "method": "scene_detect(8帧)"
+ },
+ {
+  "video_file": "video_002.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"动画/CG\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"攻略建议\",\n  \"selling_point\": \"低门槛变强\",\n  \"cta_type\": \"无明确CTA\",\n  \"claim_type\": [\"低门槛变强\"],\n  \"core_action\": [\"角色/装备展示\"],\n  \"growth_payoff\": [\"战力大幅提升\"]\n}\n```",
+  "method": "scene_detect(8帧)+multimodal"
+ },
+ {
+  "video_file": "video_003.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"动画/CG\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"冲突引入\",\n  \"selling_point\": \"弱者逆袭\",\n  \"cta_type\": \"无明确CTA\",\n  \"claim_type\": [\"无明确承诺\"],\n  \"core_action\": [\"角色/装备展示\"],\n  \"growth_payoff\": [\"外观进化\"]\n}\n```",
+  "method": "scene_detect(8帧)"
+ },
+ {
+  "video_file": "video_004.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"动画/CG\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"悬念提问\",\n  \"selling_point\": \"世界观/IP代入\",\n  \"cta_type\": \"无明确CTA\",\n  \"claim_type\": [\"无明确承诺\"],\n  \"core_action\": [\"攻略配置\"],\n  \"growth_payoff\": [\"外观进化\"]\n}\n```",
+  "method": "scene_detect(8帧)+multimodal"
+ },
+ {
+  "video_file": "video_005.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"实机+包装\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"攻略建议\",\n  \"selling_point\": \"低门槛变强\",\n  \"cta_type\": \"无明确CTA\",\n  \"claim_type\": [\"挂机变强\"],\n  \"core_action\": [\"角色/装备展示\"],\n  \"growth_payoff\": [\"战力大幅提升\"]\n}\n```",
+  "method": "scene_detect(8帧)+multimodal"
+ },
+ {
+  "video_file": "video_006.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"实机+包装\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"爽感直给\",\n  \"selling_point\": \"低门槛变强\",\n  \"cta_type\": \"无明确CTA\",\n  \"claim_type\": [\"挂机变强\"],\n  \"core_action\": [\"角色/装备展示\"],\n  \"growth_payoff\": [\"战力大幅提升\"]\n}\n```",
+  "method": "uniform(8帧)+multimodal"
+ },
+ {
+  "video_file": "video_007.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"实机+包装\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"爽感直给\",\n  \"selling_point\": \"低门槛变强\",\n  \"cta_type\": \"无明确CTA\",\n  \"claim_type\": [\"高爆率\", \"挂机变强\"],\n  \"core_action\": [\"角色/装备展示\"],\n  \"growth_payoff\": [\"战力大幅提升\"]\n}\n```",
+  "method": "scene_detect(7帧)+multimodal"
+ },
+ {
+  "video_file": "video_008.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"实机+包装\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"攻略建议\",\n  \"selling_point\": \"低门槛变强\",\n  \"cta_type\": \"无明确CTA\",\n  \"claim_type\": [\"挂机变强\"],\n  \"core_action\": [\"角色/装备展示\"],\n  \"growth_payoff\": [\"战力大幅提升\"]\n}\n```",
+  "method": "scene_detect(8帧)+multimodal"
+ },
+ {
+  "video_file": "video_009.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"动画/CG\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"爽感直给\",\n  \"selling_point\": \"世界观/IP代入\",\n  \"cta_type\": \"无明确CTA\",\n  \"claim_type\": [\"无明确承诺\"],\n  \"core_action\": [\"角色/装备展示\"],\n  \"growth_payoff\": [\"外观进化\"]\n}\n```",
+  "method": "scene_detect(4帧)"
+ },
+ {
+  "video_file": "video_010.mp4",
+  "raw_output": "```json\n{\n  \"visual_source_type\": \"实机+包装\",\n  \"has_real_person\": \"无\",\n  \"narrative_structure\": \"福利展示\",\n  \"selling_point\": \"世界观/IP代入\",\n  \"cta_type\": \"无明确CTA\",\n  \"claim_type\": [\"高爆率\", \"挂机变强\"],\n  \"core_action\": [\"角色/装备展示\"],\n  \"growth_payoff\": [\"外观进化\"]\n}\n```",
+  "method": "scene_detect(6帧)+multimodal"
+ }
+]

@@ -1,36 +1,41 @@
 # -*- coding: utf-8 -*-
-"""Baseline 推理脚本：Qwen2.5-VL-7B 对短视频做8字段语义标注
+"""Inference script: InternVL2.5-8B (v5) / Qwen2.5-VL-7B (fallback)
 
 用法:
-  # 原始模式（固定fps抽帧）
   python infer.py --video_dir <视频目录> --out <输出jsonl> [--limit N]
-
-  # v1: Scene detect 模式（按场景切换提取关键帧）
   python infer.py --video_dir <视频目录> --out <输出jsonl> --use_scene_detect
+  python infer.py ... --model_type qwen   # 回退到 Qwen
 """
 import argparse, json, os, re, sys, time, tempfile
 
 import torch
-from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
-from qwen_vl_utils import process_vision_info
+import torchvision.transforms as T
+from PIL import Image
+from torchvision.transforms.functional import InterpolationMode
+from transformers import AutoModel, AutoTokenizer
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from schema import ENUMS, MULTI_LIMIT, SINGLE_FIELDS, MULTI_FIELDS, normalize_record
 
-MODEL_PATH = "/root/autodl-tmp/models/Qwen2.5-VL-7B-Instruct"
+MODEL_PATH = "/root/autodl-tmp/models/models/OpenGVLab--InternVL2_5-8B/snapshots/master"
+QWEN_PATH = "/root/autodl-tmp/models/Qwen2.5-VL-7B-Instruct"
 
-PROMPT = f"""你是游戏买量广告视频的专业标注员。请观看这条游戏广告短视频（含画面与字幕），从画面内容、文字信息、叙事方式等角度分析，输出8个标注字段。
+# ── InternVL image preprocessing (from official README) ──
+IMAGENET_MEAN = (0.485, 0.456, 0.406)
+IMAGENET_STD = (0.229, 0.224, 0.225)
+
+PROMPT = f"""你是游戏买量广告视频的专业标注员。请观看这些按时间排序的视频关键帧（从上到下依次是视频开头到结尾），从画面内容、文字信息、叙事方式等角度分析，输出8个标注字段。
 
 各字段定义与可选值（必须严格从可选值中选择，不得自造标签）：
 
 1. visual_source_type（画面素材来源，单选）: {json.dumps(ENUMS['visual_source_type'], ensure_ascii=False)}
    - "实机+包装"=游戏实机画面加特效包装; "录屏"=纯游戏录屏; "情景剧/短剧"=真人表演剧情
 2. has_real_person（是否真人出镜，单选）: ["有", "无"]
-3. narrative_structure（视频开头叙事手法，单选，重点看前5秒）: {json.dumps(ENUMS['narrative_structure'], ensure_ascii=False)}
+3. narrative_structure（视频开头叙事手法，单选，重点看前几帧）: {json.dumps(ENUMS['narrative_structure'], ensure_ascii=False)}
    - "爽感直给"=开局直接展示爽点; "冲突引入"=以矛盾冲突开场; "攻略建议"=以攻略教学口吻开场; "悬念提问"=以疑问句开场
 4. selling_point（整条素材核心卖点，单选）: {json.dumps(ENUMS['selling_point'], ensure_ascii=False)}
    - "爆装刺激"=强调打怪爆装备; "低门槛变强"=强调轻松挂机变强; "世界观/IP代入"=强调IP情怀世界观
-5. cta_type（结尾行动号召，单选，重点看最后5秒）: {json.dumps(ENUMS['cta_type'], ensure_ascii=False)}
+5. cta_type（结尾行动号召，单选，重点看最后几帧）: {json.dumps(ENUMS['cta_type'], ensure_ascii=False)}
 6. claim_type（利益承诺话术，多选0-{MULTI_LIMIT['claim_type']}个）: {json.dumps(ENUMS['claim_type'], ensure_ascii=False)}
    - "高爆率"=承诺装备爆率高; "挂机变强"=承诺挂机就能变强; "登录送"=承诺登录送福利
 7. core_action（主要游戏动作展示，多选1-{MULTI_LIMIT['core_action']}个）: {json.dumps(ENUMS['core_action'], ensure_ascii=False)}
@@ -61,6 +66,69 @@ FEWSHOT_PROMPT = f"""你是游戏买量广告视频的专业标注员。请观�
 正确输出：{{"visual_source_type": "实机+包装", "has_real_person": "无", "narrative_structure": "爽感直给", "selling_point": "爆装刺激", "cta_type": "立即体验", "claim_type": ["高爆率"], "core_action": ["自动战斗/挂机", "Boss战"], "growth_payoff": ["战力大幅提升", "装备获得或升级"]}}
 
 只输出JSON，不要其他文字："""
+
+
+# ── InternVL image loading ──
+
+def _build_transform(input_size: int):
+    return T.Compose([
+        T.Lambda(lambda img: img.convert('RGB') if img.mode != 'RGB' else img),
+        T.Resize((input_size, input_size), interpolation=InterpolationMode.BICUBIC),
+        T.ToTensor(),
+        T.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD)
+    ])
+
+
+def _find_closest_aspect_ratio(aspect_ratio, target_ratios, width, height, image_size):
+    best_ratio_diff = float('inf')
+    best_ratio = (1, 1)
+    area = width * height
+    for ratio in target_ratios:
+        target_aspect_ratio = ratio[0] / ratio[1]
+        ratio_diff = abs(aspect_ratio - target_aspect_ratio)
+        if ratio_diff < best_ratio_diff:
+            best_ratio_diff = ratio_diff
+            best_ratio = ratio
+        elif ratio_diff == best_ratio_diff:
+            if area > 0.5 * image_size * image_size * ratio[0] * ratio[1]:
+                best_ratio = ratio
+    return best_ratio
+
+
+def _dynamic_preprocess(image, min_num=1, max_num=6, image_size=448, use_thumbnail=False):
+    orig_width, orig_height = image.size
+    aspect_ratio = orig_width / orig_height
+    target_ratios = set(
+        (i, j) for n in range(min_num, max_num + 1) for i in range(1, n + 1) for j in range(1, n + 1) if
+        i * j <= max_num and i * j >= min_num)
+    target_ratios = sorted(target_ratios, key=lambda x: x[0] * x[1])
+    target_aspect_ratio = _find_closest_aspect_ratio(aspect_ratio, target_ratios, orig_width, orig_height, image_size)
+    target_width = image_size * target_aspect_ratio[0]
+    target_height = image_size * target_aspect_ratio[1]
+    blocks = target_aspect_ratio[0] * target_aspect_ratio[1]
+    resized_img = image.resize((target_width, target_height))
+    processed_images = []
+    for i in range(blocks):
+        box = (
+            (i % (target_width // image_size)) * image_size,
+            (i // (target_width // image_size)) * image_size,
+            ((i % (target_width // image_size)) + 1) * image_size,
+            ((i // (target_width // image_size)) + 1) * image_size
+        )
+        processed_images.append(resized_img.crop(box))
+    if use_thumbnail and len(processed_images) != 1:
+        processed_images.append(image.resize((image_size, image_size)))
+    return processed_images
+
+
+def _load_image_internvl(image_file, input_size=448, max_num=6):
+    """InternVL 官方图片加载：动态 tile + normalize"""
+    image = Image.open(image_file).convert('RGB')
+    transform = _build_transform(input_size=input_size)
+    images = _dynamic_preprocess(image, image_size=input_size, use_thumbnail=True, max_num=max_num)
+    pixel_values = [transform(img) for img in images]
+    pixel_values = torch.stack(pixel_values)
+    return pixel_values
 
 
 def build_multimodal_prompt(multi_text: str, base_prompt: str) -> str:
@@ -159,31 +227,23 @@ def _get_whisper():
     return _whisper_model
 
 
-def _vlm_ocr(frame_paths: list, model, processor, max_pixels: int = 200704) -> str:
-    """用 Qwen2.5-VL 自身做 OCR，返回提取的文字"""
-    from qwen_vl_utils import process_vision_info
-
-    content = []
+def _vlm_ocr(frame_paths: list, model, tokenizer) -> str:
+    """用 InternVL 自身做 OCR，返回提取的文字"""
+    pixel_values_list = []
     for fp in frame_paths:
-        content.append({"type": "image", "image": fp, "max_pixels": max_pixels})
-    content.append({"type": "text", "text": OCR_PROMPT})
-    messages = [{"role": "user", "content": content}]
+        pv = _load_image_internvl(fp, input_size=448, max_num=1).to(dtype=torch.bfloat16, device='cuda:0')
+        pixel_values_list.append(pv)
+    pixel_values = torch.cat(pixel_values_list, dim=0)
 
-    text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-    image_inputs, video_inputs, video_kwargs = process_vision_info(messages, return_video_kwargs=True)
-    inputs = processor(text=[text], images=image_inputs, videos=video_inputs,
-                       padding=True, return_tensors="pt", **video_kwargs).to(model.device)
-
-    with torch.no_grad():
-        generated_ids = model.generate(**inputs, max_new_tokens=256, temperature=0, do_sample=False)
-    generated_ids_trimmed = [out_ids[len(in_ids):] for in_ids, out_ids in zip(inputs.input_ids, generated_ids)]
-    result = processor.batch_decode(generated_ids_trimmed, skip_special_tokens=True)[0].strip()
+    question = '<image>\n' * len(frame_paths) + OCR_PROMPT
+    response = model.chat(tokenizer, pixel_values, question, dict(max_new_tokens=256, do_sample=False))
+    result = response.strip()
     if "无文字" in result:
         return ""
     return result
 
 
-def extract_multimodal_text(video_path: str, frame_paths: list, model=None, processor=None):
+def extract_multimodal_text(video_path: str, frame_paths: list, model=None, tokenizer=None):
     """v3: 从视频提取音频文字(ASR) + 画面文字(OCR)，返回额外 prompt 文本"""
     info_parts = []
     import subprocess
@@ -195,8 +255,8 @@ def extract_multimodal_text(video_path: str, frame_paths: list, model=None, proc
             ["ffmpeg", "-i", video_path, "-vn", "-acodec", "pcm_s16le",
              "-ar", "16000", "-ac", "1", "-y", audio_path, "-loglevel", "error"],
             check=True, timeout=30)
-        model = _get_whisper()
-        result = model.transcribe(audio_path, language="zh", fp16=False)
+        whisper_m = _get_whisper()
+        result = whisper_m.transcribe(audio_path, language="zh", fp16=False)
         audio_text = result["text"].strip()
         if audio_text:
             info_parts.append(f"【语音内容】{audio_text}")
@@ -206,11 +266,11 @@ def extract_multimodal_text(video_path: str, frame_paths: list, model=None, proc
         if os.path.exists(audio_path):
             os.remove(audio_path)
 
-    # ── OCR: Qwen自身提取关键帧画面文字 ──
-    if model is not None and processor is not None:
+    # ── OCR: InternVL 自身提取关键帧画面文字 ──
+    if model is not None and tokenizer is not None:
         ocr_frames = frame_paths[:2] + frame_paths[-2:] if len(frame_paths) > 4 else frame_paths
         try:
-            ocr_result = _vlm_ocr(ocr_frames, model, processor)
+            ocr_result = _vlm_ocr(ocr_frames, model, tokenizer)
             if ocr_result and "无文字" not in ocr_result:
                 info_parts.append(f"【画面文字】{ocr_result}")
         except Exception:
@@ -239,30 +299,52 @@ def main():
     ap.add_argument("--video_dir", required=True)
     ap.add_argument("--out", required=True)
     ap.add_argument("--limit", type=int, default=0, help="只跑前N条(调试用)")
-    ap.add_argument("--max_pixels", type=int, default=200704, help="每帧最大像素(默认448*448)")
     ap.add_argument("--fps", type=float, default=1.0, help="抽帧率(原始模式)")
-    ap.add_argument("--use_scene_detect", action="store_true", help="v1: 用场景切换检测替换固定fps")
-    ap.add_argument("--max_keyframes", type=int, default=12, help="scene detect 最大关键帧数")
-    ap.add_argument("--use_cot", action="store_true", help="v2: 用Few-shot增强prompt")
+    ap.add_argument("--use_scene_detect", action="store_true", help="v1: 场景切换检测关键帧")
+    ap.add_argument("--max_keyframes", type=int, default=12, help="最大关键帧数")
+    ap.add_argument("--use_cot", action="store_true", help="v2: Few-shot prompt")
     ap.add_argument("--max_tokens", type=int, default=512, help="最大生成token数")
-    ap.add_argument("--use_multimodal", action="store_true", help="v3: ASR语音+OCR画面文字融合")
+    ap.add_argument("--use_multimodal", action="store_true", help="v3: ASR+OCR多模态")
+    ap.add_argument("--model_type", default="internvl", choices=["internvl", "qwen"],
+                    help="internvl=InternVL2.5-8B / qwen=Qwen2.5-VL-7B")
+    ap.add_argument("--quantize", action="store_true", help="InternVL 8-bit量化(省显存)")
     args = ap.parse_args()
 
     videos = sorted(f for f in os.listdir(args.video_dir) if f.endswith(".mp4"))
     if args.limit:
         videos = videos[: args.limit]
-    print(f"待推理视频数: {len(videos)}  mode={'scene_detect' if args.use_scene_detect else 'fps'}"
+    print(f"待推理视频数: {len(videos)}  model={args.model_type}"
+          f"  mode={'scene_detect' if args.use_scene_detect else 'fps'}"
           f"  prompt={'cot' if args.use_cot else 'baseline'}")
 
     prompt = FEWSHOT_PROMPT if args.use_cot else PROMPT
     max_tokens = args.max_tokens if args.use_cot else 512
 
-    print("加载模型...", MODEL_PATH)
-    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-        MODEL_PATH, torch_dtype=torch.bfloat16, attn_implementation="sdpa",
-        device_map="cuda:0")
-    processor = AutoProcessor.from_pretrained(MODEL_PATH)
-    model.eval()
+    if args.model_type == "qwen":
+        from transformers import Qwen2_5_VLForConditionalGeneration, AutoProcessor
+        from qwen_vl_utils import process_vision_info
+        print("加载模型 (Qwen)...", QWEN_PATH)
+        model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
+            QWEN_PATH, torch_dtype=torch.bfloat16, attn_implementation="sdpa",
+            device_map="cuda:0")
+        tokenizer = AutoProcessor.from_pretrained(QWEN_PATH)
+        model.eval()
+        USE_QWEN = True
+    else:
+        print("加载模型 (InternVL)...", MODEL_PATH)
+        load_kwargs = dict(
+            torch_dtype=torch.bfloat16, low_cpu_mem_usage=True,
+            trust_remote_code=True)
+        if args.quantize:
+            load_kwargs["load_in_8bit"] = True
+            print("  使用 8-bit 量化")
+        else:
+            load_kwargs["torch_dtype"] = torch.bfloat16
+        model = AutoModel.from_pretrained(MODEL_PATH, **load_kwargs).eval()
+        if not args.quantize:
+            model = model.cuda()
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, trust_remote_code=True, use_fast=False)
+        USE_QWEN = False
 
     results, raw_log = [], []
     for i, vf in enumerate(videos):
@@ -270,7 +352,6 @@ def main():
         video_path = os.path.join(args.video_dir, vf)
 
         if args.use_scene_detect:
-            # ── v1: Scene detect 关键帧 ──
             frame_paths, tmpdir, method = extract_keyframes(
                 video_path, max_frames=args.max_keyframes, fps=args.fps)
 
@@ -278,46 +359,77 @@ def main():
             multi_text = ""
             if args.use_multimodal:
                 try:
-                    multi_text = extract_multimodal_text(video_path, frame_paths, model, processor)
+                    multi_text = extract_multimodal_text(video_path, frame_paths, model, tokenizer)
                     if multi_text:
                         method += "+multimodal"
                 except Exception:
                     pass
 
-            content = []
-            for fp in frame_paths:
-                content.append({"type": "image", "image": fp,
-                                "max_pixels": args.max_pixels})
-            # 多模态文字拼在 prompt 前面（结构化路由）
-            final_prompt = build_multimodal_prompt(multi_text, prompt)
-            content.append({"type": "text", "text": final_prompt})
-            messages = [{"role": "user", "content": content}]
-            text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-            image_inputs, video_inputs, video_kwargs = process_vision_info(
-                messages, return_video_kwargs=True)
-            inputs = processor(text=[text], images=image_inputs, videos=video_inputs,
-                               padding=True, return_tensors="pt", **video_kwargs).to("cuda:0")
-        else:
-            # ── baseline: 原始 fps 视频模式 ──
-            messages = [{
-                "role": "user",
-                "content": [
-                    {"type": "video", "video": video_path,
-                     "max_pixels": args.max_pixels, "fps": args.fps},
-                    {"type": "text", "text": prompt},
-                ],
-            }]
-            text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-            image_inputs, video_inputs, video_kwargs = process_vision_info(
-                messages, return_video_kwargs=True)
-            inputs = processor(text=[text], images=image_inputs, videos=video_inputs,
-                               padding=True, return_tensors="pt", **video_kwargs).to("cuda:0")
-            method = f"fps{args.fps}"
+            if USE_QWEN:
+                from qwen_vl_utils import process_vision_info
+                content = []
+                for fp in frame_paths:
+                    content.append({"type": "image", "image": fp, "max_pixels": 200704})
+                final_prompt = build_multimodal_prompt(multi_text, prompt)
+                content.append({"type": "text", "text": final_prompt})
+                messages = [{"role": "user", "content": content}]
+                text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+                image_inputs, video_inputs, video_kwargs = process_vision_info(messages, return_video_kwargs=True)
+                inputs = tokenizer(text=[text], images=image_inputs, videos=video_inputs,
+                                   padding=True, return_tensors="pt", **video_kwargs).to("cuda:0")
+                with torch.inference_mode():
+                    gen = model.generate(**inputs, max_new_tokens=max_tokens, do_sample=False)
+                out_text = tokenizer.batch_decode(
+                    gen[:, inputs.input_ids.shape[1]:], skip_special_tokens=True)[0]
+            else:
+                # ── InternVL: 多图推理 ──
+                pixel_values_list = []
+                for fp in frame_paths:
+                    pv = _load_image_internvl(fp, input_size=448, max_num=1)
+                    pixel_values_list.append(pv.to(dtype=torch.bfloat16, device='cuda:0'))
+                pixel_values = torch.cat(pixel_values_list, dim=0)
 
-        with torch.inference_mode():
-            gen = model.generate(**inputs, max_new_tokens=max_tokens, do_sample=False)
-        out_ids = gen[:, inputs.input_ids.shape[1]:]
-        out_text = processor.batch_decode(out_ids, skip_special_tokens=True)[0]
+                # InternVL 用 <image>\n 标记每张图片
+                question = '<image>\n' * len(frame_paths)
+                final_prompt = build_multimodal_prompt(multi_text, prompt)
+                question += final_prompt
+
+                out_text = model.chat(tokenizer, pixel_values, question,
+                                      dict(max_new_tokens=max_tokens, do_sample=False))
+        else:
+            # ── baseline: fps 模式 ──
+            if USE_QWEN:
+                from qwen_vl_utils import process_vision_info
+                messages = [{
+                    "role": "user", "content": [
+                        {"type": "video", "video": video_path, "max_pixels": 200704, "fps": args.fps},
+                        {"type": "text", "text": prompt},
+                    ]}]
+                text = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+                image_inputs, video_inputs, video_kwargs = process_vision_info(messages, return_video_kwargs=True)
+                inputs = tokenizer(text=[text], images=image_inputs, videos=video_inputs,
+                                   padding=True, return_tensors="pt", **video_kwargs).to("cuda:0")
+                with torch.inference_mode():
+                    gen = model.generate(**inputs, max_new_tokens=max_tokens, do_sample=False)
+                out_text = tokenizer.batch_decode(
+                    gen[:, inputs.input_ids.shape[1]:], skip_special_tokens=True)[0]
+                method = f"fps{args.fps}"
+            else:
+                # InternVL baseline: 抽帧推理（不支持直接 video 输入）
+                frame_paths, tmpdir, method = extract_keyframes(
+                    video_path, max_frames=args.max_keyframes, fps=args.fps)
+
+                pixel_values_list = []
+                for fp in frame_paths:
+                    pv = _load_image_internvl(fp, input_size=448, max_num=1)
+                    pixel_values_list.append(pv.to(dtype=torch.bfloat16, device='cuda:0'))
+                pixel_values = torch.cat(pixel_values_list, dim=0)
+
+                question = '<image>\n' * len(frame_paths) + prompt
+                out_text = model.chat(tokenizer, pixel_values, question,
+                                      dict(max_new_tokens=max_tokens, do_sample=False))
+                method += f"+internvl({len(frame_paths)}帧)"
+
         raw = extract_json(out_text)
         rec = normalize_record(vf, raw)
         rec = apply_label_rules(rec)  # v4: 标签联动修正
@@ -327,7 +439,7 @@ def main():
               f"{rec['visual_source_type']} | {rec['selling_point']}")
 
         # 清理临时帧文件
-        if args.use_scene_detect:
+        if args.use_scene_detect or (not USE_QWEN):
             import shutil
             shutil.rmtree(tmpdir, ignore_errors=True)
 
